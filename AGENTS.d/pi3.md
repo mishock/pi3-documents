@@ -323,3 +323,16 @@
 - 2026-11-08T17:08:05+03:00 2026-11-08 ЖЁСТКО: VPS Cursor_ 130.17.8.47 = облачный Cursor Agent 24/7 (PWA :8766/:8767). vpn-relay снят.
 
 - 2026-11-08T17:26:17+03:00 ЖЁСТКО: Cursor_ VPS = резервный Cursor Agent только SSH/CLI, без веб-PWA.
+
+- 2026-11-09T05:28:30+00:00 VPN починен: гараж снова блокирует прямой 89.127.199.6:443. На Cursor_Cloud поднят vpn-bridge-dnat.service (DNAT 443/2096→89.127.199.6, UFW allow). Для малинок Vision через DNAT не работает — Pi3/Pi5 ходят SSH-туннелем NetBird→cloud(100.102.143.216)→89.127.199.6:443 на 127.0.0.1:1443 + xray Vision/spiderX. Pi3: pi3-vpn-tunnel.service + xray→127.0.0.1:1443. Pi5: pi5-vpn-tunnel.service на agent@100.102.143.216 (не через Pi3), docker xray-pi5 удалён (конфликт 10808), xray-nightly-update.timer disabled. Проверено exit IP 89.127.199.6 на Pi3 (10808/10809) и Pi5 (10808/10809).
+2026-11-09T18:24:34+0300 HA login: username михаил, password reset to family WiFi password Mishock_y921oe (Companion login screen).
+- 2026-11-10T12:57:00+03:00 Pi5 rpi-connect: HTTP_PROXY → 127.0.0.1:10809 (локальный xray), не tinyproxy Pi3. Pi3+Pi5 на spare Fornex 301-122585 (exit 145.223.33.133). vpn-switch spare|primary|status на обеих.
+- 2026-11-10T13:15:00+03:00 VPN прод на Cursor_Cloud 130.17.8.47 (3x-ui+WG). Старый VPN_Server 89.127.199.6 сервисы stop. Pi5 primary через SSH-туннель :1443→Cloud:443; Pi3 прямой. Cursor worker на Cloud жив. vpn-bridge-dnat снят. NetBird Cloud NeedsLogin.
+
+- 2026-11-10T18:12:08+03:00 2026-11-10 EspLed (EspHapLed MAC BC:DD:C2:88:89:7C, id 80:16:14:12:8F:F2): в AiNET IP 10.0.20.2, HAP :5556, sf=1 unpaired. DHCP-резерв желателен 10.0.20.31. Код HomeKit 111-11-111. HA entry нет.
+
+# EspLed (2026-11-10)
+- EspHapLed MAC `BC:DD:C2:88:89:7C`, HomeKit id `80:16:14:12:8F:F2`, mDNS `EspLed-8016`
+- В AiNET: IP `10.0.20.2`, HAP `:5556`, **sf=1 unpaired**. Желательный DHCP: `10.0.20.31`
+- Код спаривания HomeKit: `111-11-111`. В HA entry сейчас нет.
+
