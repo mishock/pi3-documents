@@ -336,3 +336,9 @@
 - В AiNET: IP `10.0.20.2`, HAP `:5556`, **sf=1 unpaired**. Желательный DHCP: `10.0.20.31`
 - Код спаривания HomeKit: `111-11-111`. В HA entry сейчас нет.
 
+# EspLed — всегда AiNET (2026-11-10)
+- Устройство: EspHapLed / hostname `EspLed`, MAC `BC:DD:C2:88:89:7C`, HomeKit id `80:16:14:12:8F:F2`
+- **Wi‑Fi зашит в прошивке:** SSID `AiNET`, пароль семейный. SoftAP/WiFiManager нет — после любого софт-сброса снова только AiNET (не GARAGE).
+- Канон исходников: Pi5 `~/Documents/Проекты/Arduino/firmware/EspHapAdvancedDimmableLed_MY/` (усилен STA-only + persistent). Чтобы усиление попало в чип — USB-перепрошивка.
+- DHCP-резерв: `10.0.20.31` (`Raspberry_Pi_3_HomePortable/scripts/apply-ainet-wifi-dhcp-reservations.sh`); сейчас часто `10.0.20.2`.
+- HomeKit code: `111-11-111`. Условие: AiNET **2.4 ГГц** на Time Capsule включён.
