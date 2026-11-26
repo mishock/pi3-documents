@@ -6,39 +6,27 @@
 - mDNS: `Camera-E1-E147`
 - Модель: **CH-C01E**
 - MAC: `54:EF:44:5A:E1:47`
-- DHCP reservation: **10.0.20.9** (после renew; до renew может быть другой IP)
-- HAP `:40271`, RTSP `:8554` (нужен пароль из Aqara Home)
+- DHCP reservation: **10.0.20.9**
+- HAP `:40271`, RTSP `:8554`
 
-## Причина
-`ntp.aqara.com` / `time.aqara.com` резолвятся в **китайский** `120.53.71.194`.  
-С гаража **UDP/123** до этого адреса **не отвечает** (TCP/443 при этом ок).  
-Камера не получает NTP → OSD-время уезжает.
+## Две проблемы
+1. **NTP CN недоступен:** `ntp.aqara.com` → `120.53.71.194:123` UDP не отвечает из гаража.
+2. **Пояс OSD:** камера рисует время как **UTC+2**, Москва = **UTC+3** → ровно −1 час на OSD даже при рабочем NTP.
 
-## Исправление (Pi3 + Time Capsule)
-1. **chrony** на Pi3 (`10.0.20.56`) — NTP-сервер для LAN (`allow 10.0.20.0/24`).
-2. **dnsmasq** на Pi3 — `ntp.aqara.com` / `time.aqara.com` / `ntp.aliyun.com` → `10.0.20.56`.
-3. **UFW** — разрешены UDP/TCP 53 и UDP 123 с `10.0.20.0/24`.
-4. **Time Capsule dnscache** — файлы  
-   `/var/sv/dnscache/root/servers/{ntp.aqara.com,time.aqara.com,ntp.aliyun.com,ntp1.aliyun.com}`  
-   содержат `10.0.20.56` (точечный forward, без поломки общего DNS).
-5. **DHCP** на капсуле: `option domain-name-servers 10.0.20.56, 10.0.20.1;`  
-   `option ntp-servers 10.0.20.56;` + резерв MAC→IP.
-6. Persist: `/mnt/Flash/apply-aqara-ntp-dns.sh` + `dhcpd.conf.desired` в `rc.local`.
+## Фикс
+| Компонент | Роль |
+|-----------|------|
+| chrony `10.0.20.56` | нормальный NTP для LAN |
+| `aqara-ntp-skew` `10.0.20.48:123` | NTP **+1 час** только для Aqara |
+| dnsmasq на `.56` | `ntp.aqara.com` → `10.0.20.48` |
+| TC dnscache | forward DNS `ntp.aqara.com` → dnsmasq `.56` |
+| UFW | UDP/TCP 53 и UDP 123 с `10.0.20.0/24` |
 
-## Проверка
-```bash
-# DNS через капсулу
-python3 -c "..."  # ntp.aqara.com @10.0.20.1 → 10.0.20.56
-# NTP
-chronyc tracking
-# с LAN
-echo | nc -u -w2 10.0.20.56 123
-```
+Сервис: `systemctl status aqara-ntp-skew`
 
-## Aqara Home
-Дополнительно в приложении: **Дом → Настройки дома → Время / часовой пояс** = Москва (Europe/Moscow).  
-Это влияет на отображаемый локальный пояс поверх NTP.
+## Правильный фикс в приложении (предпочтительно)
+Aqara Home → **Дом → Настройки дома → Время / часовой пояс** → Москва (не в Profile).
+Тогда можно выключить skew (`systemctl disable --now aqara-ntp-skew`) и вернуть DNS на `.56` chrony.
 
-## После фикса
-Если OSD ещё старое — один раз выключить/включить питание камеры (форс NTP).  
-SSH на капсулу: `ssh tc` (включается через ACP при необходимости).
+## После изменений
+Камере нужен **перезапуск питания** (или сброс Wi‑Fi), чтобы заново взять NTP.
